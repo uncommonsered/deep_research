@@ -1,13 +1,25 @@
+import tempfile
+
 import httpx
 import requests
 import trafilatura
-from markdownify import markdownify
+from langchain_pymupdf4llm import PyMuPDF4LLMLoader
 
 from tools.tools_templates import FetchTool, SearchTool, ThinkTool
 
 
 class HttpxMarkdownFetch(FetchTool):
     timeout: int = 10
+
+    def fetch_pdf(self, content: bytes) -> str:
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as f:
+            f.write(content)
+            f.flush()
+
+            loader = PyMuPDF4LLMLoader(f.name)
+            docs = loader.load()
+
+        return "\n\n".join(doc.page_content for doc in docs)
 
     def fetch(self, urls: list[str]) -> str:
         final_content = ""
@@ -30,12 +42,18 @@ class HttpxMarkdownFetch(FetchTool):
                 )
                 response.raise_for_status()
 
-                text = trafilatura.extract(
-                    response.text,
-                    include_links=True,
-                    include_tables=True,
-                    output_format="markdown",
-                )
+                content_type = response.headers.get("content-type", "").lower()
+
+                if "application/pdf" in content_type:
+                    text = self.fetch_pdf(response.content)
+
+                else:
+                    text = trafilatura.extract(
+                        response.text,
+                        include_links=True,
+                        include_tables=True,
+                        output_format="markdown",
+                    )
 
                 if not text:
                     text = "Failed to extract page content"
