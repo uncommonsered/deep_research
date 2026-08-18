@@ -1,23 +1,41 @@
-from abc import ABC, abstractmethod
-
 from langchain_core.tools import BaseTool
-from pydantic import Field
 
 
-class SearchTool(ABC):
-    @abstractmethod
-    def search(self, query: str) -> list[str]:
-        pass
+class SearchTool(BaseTool):
+    name: str = "search"
+    description: str = """
+    Выполняет поиск информации в интернете по заданному запросу.
+
+    Args:
+        query: Поисковый запрос.
+        max_results: Максимальное количество результатов для возврата.
+
+    Returns:
+        Список найденных URL.
+    """
+
+    def _run(self, query: str, max_results: int) -> list[str]:
+        return self.search(query, max_results)
 
 
-class FetchTool(ABC):
-    @abstractmethod
-    def fetch(self, urls: list[str]) -> str:
-        pass
+class FetchTool(BaseTool):
+    name: str = "fetch"
+    description: str = """
+    Загружает содержимое веб-страниц по указанным URL.
+
+    Args:
+        urls: Список URL для загрузки.
+
+    Returns:
+        Содержимое найденных веб-страниц в формате Markdown.
+    """
+
+    def _run(self, urls: list[str]) -> str:
+        return self.fetch(urls)
 
 
 class ThinkTool(BaseTool):
-    name: str = "think_tool"
+    name: str = "think"
     description: str = """Инструмент для стратегического анализа прогресса исследования и принятия решений.
 
     Используйте этот инструмент после каждого поиска, чтобы проанализировать полученные результаты и систематически спланировать следующие шаги.
@@ -48,29 +66,3 @@ class ThinkTool(BaseTool):
 
     def think(self, reflection) -> str:
         return f"Reflected {reflection}"
-
-
-class SearchAndFetchTool(BaseTool):
-    name: str = "search_and_fetch"
-    description: str = """Поиск информации в интернете по заданному запросу.
-
-    Сначала выполняет поиск для обнаружения релевантных URL-адресов,
-    затем загружает найденные веб-страницы и возвращает их полное содержимое в формате Markdown.
-
-    Args:
-        query: Поисковый запрос
-        max_results: Максимальное количество результатов для возврата (по умолчанию: 2)
-
-    Returns:
-        Отформатированные результаты поиска с полным содержимым найденных веб-страниц
-    """
-
-    search_tool: SearchTool = Field(exclude=True)
-    fetch_tool: FetchTool = Field(exclude=True)
-
-    def search_and_fetch(self, query: str, max_results: int = 2) -> str:
-        urls = self.search_tool.search(query, max_results)
-        return self.fetch_tool.fetch(urls)
-
-    def _run(self, query: str, max_results: int = 2) -> str:
-        return self.search_and_fetch(query, max_results)
