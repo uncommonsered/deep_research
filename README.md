@@ -65,7 +65,13 @@ SEARXNG_PORT=8080
 Запускаем сервисы и развертываем модель в контейнере с ollama с любой моделью из доступных [тут](https://ollama.com/library):
 
 ```bash
-docker compose up -d
+docker compose -f docker-compose.nvidia.yml up -d
+docker exec -it ollama ollama run qwen3.5:9b
+```
+Если видео-карты нет, то: 
+
+```bash
+docker compose -f docker-compose.yml up -d
 docker exec -it ollama ollama run qwen3.5:9b
 ```
 
