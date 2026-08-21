@@ -62,7 +62,7 @@ SEARXNG_HOST=127.0.0.1
 SEARXNG_PORT=8080
 ```
 
-Запускаем сервисы и развертываем модель в контейнере с ollama с любой моделью из доступных (тут)[https://ollama.com/library]:
+Запускаем сервисы и развертываем модель в контейнере с ollama с любой моделью из доступных [тут](https://ollama.com/library):
 
 ```bash
 docker compose up -d
