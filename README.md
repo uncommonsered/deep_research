@@ -22,6 +22,7 @@ deep_research/
 │   └── tools_templates.py
 ├── .gitignore
 ├── example_research.ipynb
+├── requirements.txt
 └── utils.py
 ```
 
